@@ -52,6 +52,12 @@ proto.onclick = function (ecModel, api) {
     var title = model.get('name') || ecModel.get('title.0.text') || 'echarts';
     var isSvg = api.getZr().painter.getType() === 'svg';
     var type = isSvg ? 'svg' : model.get('type', true) || 'png';
+    if (typeof api.saveAsImage === 'function') {
+        return api.saveAsImage({
+            title: title,
+            type: type
+        });
+    }
     var url = api.getConnectedDataURL({
         type: type,
         backgroundColor: model.get('backgroundColor', true)
