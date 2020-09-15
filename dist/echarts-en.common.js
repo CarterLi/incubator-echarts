@@ -29432,7 +29432,7 @@ function updateHoverLayerStatus(ecIns, ecModel) {
         elCount++;
     });
 
-    if (elCount > ecModel.get('hoverLayerThreshold') && !env$1.node) {
+    if (elCount > ecModel.get('hoverLayerThreshold') && !env$1.node && !env$1.worker) {
         ecModel.eachSeries(function (seriesModel) {
             if (seriesModel.preventUsingHoverLayer) {
                 return;
@@ -35497,7 +35497,7 @@ function makeLabelFormatter(axis) {
             if (categoryTickStart != null) {
                 idx = tickValue - categoryTickStart;
             }
-            return labelFormatter(getAxisRawValue(axis, tickValue), idx);
+            return labelFormatter.call(axis, getAxisRawValue(axis, tickValue), idx);
         };
     }
     else {
@@ -35567,8 +35567,10 @@ function rotateTextRect(textRect, rotate) {
     var boundingBox = textRect.plain();
     var beforeWidth = boundingBox.width;
     var beforeHeight = boundingBox.height;
-    var afterWidth = beforeWidth * Math.abs(Math.cos(rotateRadians)) + Math.abs(beforeHeight * Math.sin(rotateRadians));
-    var afterHeight = beforeWidth * Math.abs(Math.sin(rotateRadians)) + Math.abs(beforeHeight * Math.cos(rotateRadians));
+    var afterWidth = beforeWidth * Math.abs(Math.cos(rotateRadians))
+        + Math.abs(beforeHeight * Math.sin(rotateRadians));
+    var afterHeight = beforeWidth * Math.abs(Math.sin(rotateRadians))
+        + Math.abs(beforeHeight * Math.cos(rotateRadians));
     var rotatedRect = new BoundingRect(boundingBox.x, boundingBox.y, afterWidth, afterHeight);
 
     return rotatedRect;
@@ -49406,8 +49408,15 @@ extendComponentView({
         var renderMode = tooltipModel.get('renderMode');
         this._renderMode = getTooltipRenderMode(renderMode);
 
+        var renderer = tooltipModel.get('renderer');
         var tooltipContent;
-        if (this._renderMode === 'html') {
+        if (renderer) {
+            tooltipContent = new renderer({
+                appendToBody: tooltipModel.get('appendToBody', true)
+            });
+            this._newLine = renderer.newLine;
+        }
+        else if (this._renderMode === 'html') {
             tooltipContent = new TooltipContent(api.getDom(), api, {
                 appendToBody: tooltipModel.get('appendToBody', true)
             });
@@ -58533,6 +58542,12 @@ proto$2.onclick = function (ecModel, api) {
     var title = model.get('name') || ecModel.get('title.0.text') || 'echarts';
     var isSvg = api.getZr().painter.getType() === 'svg';
     var type = isSvg ? 'svg' : model.get('type', true) || 'png';
+    if (typeof api.saveAsImage === 'function') {
+        return api.saveAsImage({
+            title: title,
+            type: type
+        });
+    }
     var url = api.getConnectedDataURL({
         type: type,
         backgroundColor: model.get('backgroundColor', true)
