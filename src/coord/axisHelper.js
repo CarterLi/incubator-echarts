@@ -317,7 +317,7 @@ export function makeLabelFormatter(axis) {
             if (categoryTickStart != null) {
                 idx = tickValue - categoryTickStart;
             }
-            return labelFormatter(getAxisRawValue(axis, tickValue), idx);
+            return labelFormatter.call(axis, getAxisRawValue(axis, tickValue), idx);
         };
     }
     else {
@@ -415,4 +415,3 @@ export function shouldShowAllLabels(axis) {
     return axis.type === 'category'
         && getOptionCategoryInterval(axis.getLabelModel()) === 0;
 }
-
