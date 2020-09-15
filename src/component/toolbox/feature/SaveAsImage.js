@@ -52,14 +52,18 @@ proto.onclick = function (ecModel, api) {
     var title = model.get('name') || ecModel.get('title.0.text') || 'echarts';
     var isSvg = api.getZr().painter.getType() === 'svg';
     var type = isSvg ? 'svg' : model.get('type', true) || 'png';
-    var url = api.getConnectedDataURL({
+    var option = {
         type: type,
         backgroundColor: model.get('backgroundColor', true)
             || ecModel.get('backgroundColor') || '#fff',
         connectedBackgroundColor: model.get('connectedBackgroundColor'),
         excludeComponents: model.get('excludeComponents'),
         pixelRatio: model.get('pixelRatio')
-    });
+    };
+    if (typeof api.saveAsImage === 'function') {
+        return api.saveAsImage(option);
+    }
+    var url = api.getConnectedDataURL(option);
     // Chrome and Firefox
     if (typeof MouseEvent === 'function' && !env.browser.ie && !env.browser.edge) {
         var $a = document.createElement('a');
